@@ -103,7 +103,7 @@ void sls_gettime_default_string(char *cur_time)
     sls_gettime_fmt(cur_time, cur_time_sec, "%Y-%m-%d %H:%M:%S");
 }
 
-void sls_gettime_fmt(char *dst, int64_t cur_time_sec, char *fmt)
+void sls_gettime_fmt(char *dst, int64_t cur_time_sec, const char *fmt)
 {
     time_t rawtime;
     struct tm * timeinfo;
