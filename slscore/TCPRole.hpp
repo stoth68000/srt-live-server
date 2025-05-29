@@ -47,7 +47,7 @@
 typedef struct DATA_PARAM {
 	bool readable;
 	bool writable;
-};
+} DATA_PARAM;
 /**
  * CTCPRole , the base of tcp client
  */
