@@ -40,7 +40,7 @@ typedef struct SLS_RELAY_INFO {
     int      m_mode;
     int      m_reconnect_interval;//unit: s
     int      m_idle_streams_timeout;//unit: s
-};
+} SLS_RELAY_INFO;
 
 /**
  * CSLSRelayManager
