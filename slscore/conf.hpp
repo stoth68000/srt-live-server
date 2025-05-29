@@ -87,7 +87,7 @@ const char * sls_conf_set_bool  (const char *v, sls_conf_cmd_t *cmd, void *conf)
 typedef struct sls_conf_base_t sls_conf_base_s;
 typedef sls_conf_base_t * (*create_conf_func)();
 struct sls_runtime_conf_t {
-    char                    * conf_name;
+    const char              * conf_name;
 //    char                    * higher_conf_names;//if allow existing in one than one higher conf , split with '|'
     create_conf_func          create_fn;
     sls_conf_cmd_t          * conf_cmd;
@@ -95,7 +95,7 @@ struct sls_runtime_conf_t {
 
     sls_runtime_conf_t        * next;
     static sls_runtime_conf_t * first;
-    sls_runtime_conf_t(char * c, create_conf_func f, sls_conf_cmd_t * cmd, int len);
+    sls_runtime_conf_t(const char * c, create_conf_func f, sls_conf_cmd_t * cmd, int len);
 };
 
 /*
@@ -103,7 +103,7 @@ struct sls_runtime_conf_t {
  * decare a new conf please use macro SLS_CONF_DYNAMIC_DECLARE_BEGIN
  */
 struct sls_conf_base_t {
-    char            * name;
+    const char      * name;
     sls_conf_base_t * sibling;
     sls_conf_base_t * child;
 };
