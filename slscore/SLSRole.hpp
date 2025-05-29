@@ -36,7 +36,8 @@
 #include "SLSLock.hpp"
 #include "common.hpp"
 #include "HttpClient.hpp"
-
+#include "TransportStatistics.hpp"
+#include "TransportMulticastOutput.hpp"
 
 enum SLS_ROLE_STATE {
     SLS_RS_UNINIT = 0,
@@ -99,7 +100,11 @@ public :
     int         check_http_passed();
 
     void        set_record_hls_path(const char *hls_path);
+
+    void        set_multicast_output(const char *ip, int port);
 protected:
+    CTransportStatistics *m_stats;
+    CTransportMulticastOutput *m_udptx;
     CSLSSrt     *m_srt;
     bool         m_is_write;//listener: 0, publisher: 0, player: 1
     int64_t      m_invalid_begin_tm;//

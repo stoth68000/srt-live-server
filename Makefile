@@ -1,13 +1,15 @@
 SHELL = /bin/sh
 MAIN_NAME=sls
 CLIENT_NAME=slc
-INC_PATH = -I./ -I../ -I./slscore -I./include
-LIB_PATH =  -L ./lib
-LIBRARY_FILE = -lpthread -lz -lsrt
+INC_PATH = -Islscore
+INC_PATH += $(shell pkg-config --cflags srt libdvbpsi libltntstools)
+LIB_PATH = -lpthread
+LIBRARY_FILE = $(shell pkg-config --libs srt libltntstools)
+#LIBRARY_FILE += -L../target-root/usr/lib -lltntstools
 BIN_PATH = ./bin
 
 DEBUG = -g
-CFLAGS += $(DEBUG)
+CFLAGS += $(DEBUG) -Wno-invalid-offsetof
 
 LOG_PATH = ./logs
 
@@ -42,7 +44,9 @@ OBJS = $(OUTPUT_PATH)/SLSLog.o \
 	$(OUTPUT_PATH)/HttpRoleList.o\
 	$(OUTPUT_PATH)/HttpClient.o\
 	$(OUTPUT_PATH)/SLSSyncClock.o\
-	$(OUTPUT_PATH)/TSFileTimeReader.o
+	$(OUTPUT_PATH)/TSFileTimeReader.o \
+	$(OUTPUT_PATH)/TransportMulticastOutput.o \
+	$(OUTPUT_PATH)/TransportStatistics.o
 	
 CORE_PATH = slscore
 COMMON_FILES = common.hpp
@@ -58,7 +62,7 @@ all: $(OBJS)
 	#******************************************************************************#
 
 $(OUTPUT_PATH)/%.o: ./$(CORE_PATH)/%.cpp
-	${CXX} -c $(CFLAGS) $< -o $@ $(INC_FLAGS)
+	${CXX} -c $(CFLAGS) $< -o $@ $(INC_PATH)
 
 clean:
 	rm -f $(OUTPUT_PATH)/*.o

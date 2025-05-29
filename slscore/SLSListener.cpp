@@ -171,6 +171,8 @@ int CSLSListener::init_conf_app()
     }
     conf_server = (sls_conf_server_t *)m_conf;
 
+    m_multicast_base_port        = conf_server->multicast_base_port;
+    strcpy(m_multicast_base_ip, conf_server->multicast_base_ip);
     m_back_log                   = conf_server->backlog;
     m_idle_streams_timeout_role  = conf_server->idle_streams_timeout;
     strcpy(m_http_url_role, conf_server->on_event_url);
@@ -204,6 +206,7 @@ int CSLSListener::init_conf_app()
             return SLS_ERROR;
         }
         strUplive = strUpliveDomain + "/" + strUplive;
+        // eg tx/live (no game)
         m_map_publisher->set_conf(strUplive, ca);
         sls_log(SLS_LOG_INFO, "[%p]CSLSListener::init_conf_app, add app push '%s'.",
                 this, strUplive.c_str());
@@ -383,6 +386,7 @@ int CSLSListener::handler()
 
     // app exist?
     sprintf(key_app, "%s/%s", host_name, app_name);
+    int stream_index = atoi(stream_name);
 
     std::string app_uplive = "";
     sls_conf_app_t * ca = NULL;
@@ -391,6 +395,7 @@ int CSLSListener::handler()
     sls_gettime_default_string(cur_time);
 
     //3.is player?
+    // Is a downstream decoder requesting a feed
     app_uplive = m_map_publisher->get_uplive(key_app);
     if (app_uplive.length() > 0) {
         sprintf(key_stream_name, "%s/%s", app_uplive.c_str(), stream_name);
@@ -476,7 +481,11 @@ int CSLSListener::handler()
     }
 
     //4. is publisher?
+    // Is an upstream encoder asking to send a new feed
+    // Create a new publisher object
     app_uplive = key_app;
+    // app_uplive = tx/live
+    // stream_name = game-01
 	sprintf(key_stream_name, "%s/%s", app_uplive.c_str(), stream_name);
     ca = (sls_conf_app_t *)m_map_publisher->get_ca(app_uplive);
 	if (NULL == ca) {
@@ -487,6 +496,7 @@ int CSLSListener::handler()
         return client_count;
 	}
 
+    // Typically returns tx/live/game-01
 	CSLSRole * publisher = m_map_publisher->get_publisher(key_stream_name);
 	if (NULL != publisher) {
 		sls_log(SLS_LOG_ERROR, "[%p]CSLSListener::handler, refused, new role[%s:%d], stream='%s',but publisher=%p is not NULL.",
@@ -495,8 +505,10 @@ int CSLSListener::handler()
 		delete srt;
 		return client_count;
 	}
+
 	//create new publisher
 	CSLSPublisher * pub = new CSLSPublisher;
+	pub->set_multicast_output(m_multicast_base_ip, m_multicast_base_port + stream_index);
 	pub->set_srt(srt);
 	pub->set_conf(ca);
 	pub->init();
@@ -533,6 +545,8 @@ int CSLSListener::handler()
 		pub = NULL;
 		return client_count;
 	}
+
+        /* Map this new encoder input to a publisher */
 	pub->set_map_publisher(m_map_publisher);
 	pub->set_map_data(key_stream_name, m_map_data);
 	pub->on_connect();

@@ -48,6 +48,8 @@ int              backlog;
 int              latency;
 int              idle_streams_timeout;//unit s; -1: unlimited
 char             on_event_url[URL_MAX_LEN];
+int              multicast_base_port;
+char             multicast_base_ip[URL_MAX_LEN];
 SLS_CONF_DYNAMIC_DECLARE_END
 
 /**
@@ -61,6 +63,8 @@ SLS_SET_CONF(server, int,    backlog,              "how many sockets may be allo
 SLS_SET_CONF(server, int,    latency,              "latency.", 1, 300),
 SLS_SET_CONF(server, int,    idle_streams_timeout, "players idle timeout when no publisher" , -1, 86400),
 SLS_SET_CONF(server, string, on_event_url,         "on connect/close http url", 1,    URL_MAX_LEN-1),
+SLS_SET_CONF(server, int,    multicast_base_port,  "starting multiast port" , 4800, 5800),
+SLS_SET_CONF(server, string, multicast_base_ip,   "output multicast address", 1,    URL_MAX_LEN-1),
 SLS_CONF_CMD_DYNAMIC_DECLARE_END
 
 
@@ -98,6 +102,8 @@ private:
 
     CSLSMutex           m_mutex;
 
+    int                 m_multicast_base_port;
+    char                m_multicast_base_ip[128];
     int                 m_idle_streams_timeout_role;
     std::string 		m_stat_info;
     char                m_http_url_role[URL_MAX_LEN];

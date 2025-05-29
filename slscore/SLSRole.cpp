@@ -37,6 +37,7 @@
 
 CSLSRole::CSLSRole()
 {
+    m_stats = new CTransportStatistics();
     m_srt                    = NULL;
     m_is_write               = true;//listener: 0, publisher: 0, player: 1
     m_invalid_begin_tm       = sls_gettime_ms();//
@@ -84,6 +85,12 @@ CSLSRole::CSLSRole()
 CSLSRole::~CSLSRole()
 {
     uninit();
+    delete m_stats;
+
+	if (m_udptx) {
+		delete m_udptx;
+		m_udptx = NULL;
+	}
 }
 
 
@@ -258,6 +265,8 @@ void CSLSRole::set_conf(sls_conf_base_t * conf)
 
 void CSLSRole::set_map_data(char *map_key, CSLSMapData *map_data)
 {
+printf("%s() '%s'\n", __func__, map_key);
+
 	if (NULL != map_key) {
         strcpy(m_map_data_key, map_key);
         m_map_data     = map_data;
@@ -478,7 +487,15 @@ int CSLSRole::handler_read_data(int64_t *last_read_time)
     }
 
     sls_log(SLS_LOG_TRACE, "[%p]CSLSRole::handler_read_data, ok, libsrt_read n=%d.", this, n);
+
+    if (m_stats) {
+        m_stats->write((unsigned char *)szData, n / 188);
+    }
+    if (m_udptx) {
+        m_udptx->write((unsigned char *)szData, n / 188);
+    }
     int ret = m_map_data->put(m_map_data_key, szData, n, last_read_time);
+//printf("read %d: %02x %02x %02x %02x\n", n, szData[0], szData[1], szData[2], szData[3]);
 
     //record data
     if (strcmp(m_record_hls, "on") == 0) {
@@ -532,6 +549,9 @@ int CSLSRole::handler_write_data()
     int len = m_data_len - m_data_pos;
     int remainer = m_data_len - m_data_pos;
     while (remainer >= TS_UDP_LEN) {
+        if (m_stats) {
+            m_stats->write((unsigned char *)m_data + m_data_pos, TS_UDP_LEN / 188);
+        }
         ret = write(m_data + m_data_pos, TS_UDP_LEN);
         if (ret < TS_UDP_LEN) {
             sls_log(SLS_LOG_INFO, "[%p]CSLSRole::handler_write_data, write data failed, ret=%d, not %d.", this, len, ret, TS_UDP_LEN);
@@ -564,7 +584,10 @@ void   CSLSRole::set_stat_info_base(std::string &v)
 std::string   CSLSRole::get_stat_info()
 {
 	char tmp[STR_MAX_LEN] = {0};
-    sprintf(tmp, "\"%d\"}", m_kbitrate);
+	uint64_t ccerrors = ltntstools_pid_stats_stream_get_cc_errors(m_stats->m_stats);
+
+	sprintf(tmp, "\"%d\", \"ccerrors\": \"%d\"}", m_kbitrate, ccerrors);
+
 	return m_stat_info_base + std::string(tmp);
 }
 
@@ -671,3 +694,10 @@ int CSLSRole::check_http_passed()
 		return SLS_ERROR;
 	}
 }
+
+void CSLSRole::set_multicast_output(const char *ip, int port)
+{
+	m_udptx = new CTransportMulticastOutput(ip, port);
+}
+
+
