@@ -47,7 +47,8 @@ typedef struct HTTP_RESPONSE_INFO {
 	std::string              m_response_code;
 	std::string              m_response_content;
 	int                      m_response_content_length;
-};
+} HTTP_RESPONSE_INFO;
+
 /**
  * CHttpClient
  */
