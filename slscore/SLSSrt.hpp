@@ -120,10 +120,10 @@ public :
 
     void libsrt_set_latency(int latency);
 
-
     static int  libsrt_neterrno();
     static void libsrt_print_error_info();
 
+    int libsrt_bstats(SRT_TRACEBSTATS *stats, int clear);
 
 protected:
     SRTContext m_sc;

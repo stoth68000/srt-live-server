@@ -584,9 +584,20 @@ void   CSLSRole::set_stat_info_base(std::string &v)
 std::string   CSLSRole::get_stat_info()
 {
 	char tmp[STR_MAX_LEN] = {0};
-	uint64_t ccerrors = ltntstools_pid_stats_stream_get_cc_errors(m_stats->m_stats);
 
-	sprintf(tmp, "\"%d\", \"ccerrors\": \"%d\"}", m_kbitrate, ccerrors);
+	uint64_t ccerrors = ltntstools_pid_stats_stream_get_cc_errors(m_stats->m_stats);
+	sprintf(tmp, "\"%d\", \"ccerrors\": \"%d\"", m_kbitrate, ccerrors);
+
+    SRT_TRACEBSTATS stats;
+    memset(&stats, 0, sizeof(stats));
+    if (m_srt->libsrt_bstats(&stats, 1) == 0) {
+    }
+
+	sprintf(tmp + strlen(tmp), ", \"pktRetrans\": \"%d\"", stats.pktRetrans);
+	sprintf(tmp + strlen(tmp), ", \"pktSndLoss\": \"%d\"", stats.pktSndLoss);
+	sprintf(tmp + strlen(tmp), ", \"pktRcvLoss\": \"%d\"", stats.pktRcvLoss);
+	sprintf(tmp + strlen(tmp), ", \"rtt\": \"%6.02f\"", stats.msRTT);
+	sprintf(tmp + strlen(tmp), "}");
 
 	return m_stat_info_base + std::string(tmp);
 }

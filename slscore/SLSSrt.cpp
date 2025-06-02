@@ -434,3 +434,8 @@ int CSLSSrt::libsrt_getpeeraddr(char * peer_name, int& port)
     return ret;
 }
 
+int CSLSSrt::libsrt_bstats(SRT_TRACEBSTATS *stats, int clear)
+{
+    return srt_bstats(m_sc.fd, stats, clear);
+}
+
