@@ -10,6 +10,8 @@ public :
 	~CTransportStatistics();
 
 	int write(unsigned char *pkts, int packetCount);
+	uint64_t get_iat_hwm_us();
+	uint64_t get_iat_hwm_ms();
 
 	struct ltntstools_stream_statistics_s *m_stats;
 private:

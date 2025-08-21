@@ -70,3 +70,12 @@ int CTransportStatistics::write(unsigned char *pkts, int packetCount)
 	}
 }
 
+uint64_t CTransportStatistics::get_iat_hwm_us()
+{
+	return ltntstools_pid_stats_stream_get_iat_hwm_us(m_stats);
+}
+
+uint64_t CTransportStatistics::get_iat_hwm_ms()
+{
+	return ltntstools_pid_stats_stream_get_iat_hwm_us(m_stats) / 1000;
+}

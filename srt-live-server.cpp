@@ -121,6 +121,7 @@ int main(int argc, char* argv[])
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, 0);
+    sigaction(SIGTERM, &sigIntHandler, 0);
 
     //hup to reload
     sigHupHandler.sa_handler = reload_handler;
